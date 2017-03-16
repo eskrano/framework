@@ -3,6 +3,7 @@
 namespace Illuminate\Foundation\Http\Middleware;
 
 use Closure;
+use Carbon\Carbon;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Foundation\Http\Exceptions\MaintenanceModeException;
 
@@ -40,6 +41,10 @@ class CheckForMaintenanceMode
         if ($this->app->isDownForMaintenance()) {
             $data = json_decode(file_get_contents($this->app->storagePath().'/framework/down'), true);
 
+            if (null !== $data['maintenance_end'] && Carbon::now()->getTimestamp() > $data['maintenance_end']) {
+                return $next($request);
+            }
+            
             throw new MaintenanceModeException($data['time'], $data['retry'], $data['message']);
         }
 
