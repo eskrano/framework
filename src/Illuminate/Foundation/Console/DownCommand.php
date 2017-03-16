@@ -13,7 +13,8 @@ class DownCommand extends Command
      * @var string
      */
     protected $signature = 'down {--message= : The message for the maintenance mode. }
-                                 {--retry= : The number of seconds after which the request may be retried.}';
+                                 {--retry= : The number of seconds after which the request may be retried.}
+                                 {--end= : The number of seconds after which the maintenance mode automaticaly disabled.}';
 
     /**
      * The console command description.
@@ -44,10 +45,15 @@ class DownCommand extends Command
      */
     protected function getDownFilePayload()
     {
+        $maintenance_end = $this->option('end');
+        $maintenance_end = is_numeric($maintenance_end) && $maintenance_end > 0 ?
+            Carbon::now()->addSeconds($maintenance_end)->getTimestamp() : null;
+        
         return [
             'time' => Carbon::now()->getTimestamp(),
             'message' => $this->option('message'),
             'retry' => $this->getRetryTime(),
+            'maintenance_end'   =>  $maintenance_end,
         ];
     }
 
